@@ -3,44 +3,38 @@
 // April 8, 2020
 //
 // experimenting with enums that perform curried operations
-//
 
 import Foundation
 
 enum Operate {
-    case Plus
-    case Minus
-    case Multiply
+    case plus
+    case minus
+    case multiply
     case unsafeDivide
     
+    func curry<A,B,C>(_ f: @escaping (A, B) -> C) -> (A) -> (B) -> C {
+        return { a in { b in f(a, b) } }
+    }
+    
     var op: (Double) -> (Double) -> Double {
-        get {
-            switch self {
-            case .Plus:
-                return { n in
-                    return { n + $0}
-                }
-            case .Minus:
-                return { n in
-                    return { n - $0}
-                }
-            case .Multiply:
-                return { n in
-                    return { n * $0}
-                }
-            case .unsafeDivide:
-                return { n in
-                    return { n / $0 }
-                }
-            }
+        switch self {
+        case .plus:
+            return curry(+)
+        case .minus:
+            return curry(-)
+        case .multiply:
+            return curry(*)
+        case .unsafeDivide:
+            return curry(/)
         }
     }
 }
 
-let multiply = Operate.Multiply.op
-let plus = Operate.Plus.op
+let multiply = Operate.multiply.op
+let plus = Operate.plus.op
 let unsafeDivide = Operate.unsafeDivide.op
-// 3 + (16 * 2) -> 35
-plus(3)(multiply(16)(2))
+
+let result = plus(3)(multiply(16)(2))
+print(result) // 3 + (16.0 * 2) -> 35.0
 
 let calculatedResults = [2.3, 6.3, 9.87, 0.23].map(multiply(2))
